@@ -188,9 +188,9 @@ unsafe fn parse_tcp_state(diag_msg: &inet_diag_msg, rtalen: usize) -> TcpState {
     let mut len = rtalen as isize;
     let mut attr = (diag_msg as *const inet_diag_msg).offset(1) as *const rtattr;
     while RTA_OK!(attr, len) {
-        if (&*attr).rta_type == INET_DIAG_INFO as u16 {
-            let tcpi = &*(RTA_DATA!(attr) as *const tcp_info);
-            return TcpState::from(tcpi.state);
+        if (*attr).rta_type == INET_DIAG_INFO as u16 {
+            let tcpi = RTA_DATA!(attr) as *const tcp_info;
+            return TcpState::from(std::ptr::read_unaligned(tcpi).state);
         }
         attr = RTA_NEXT!(attr, len);
     }
